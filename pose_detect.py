@@ -21,7 +21,6 @@ response = requests.post(api_url, encoded_image)
 if response.status_code == 200:
     response_data = response.json()
 
-    print(response_data)
     pose_points = response_data["result"]["poses"][0]["points"]
 
     x = [point["x"] for point in pose_points]
@@ -31,19 +30,31 @@ if response.status_code == 200:
 
     ax.imshow(image)
 
-    ax.scatter(x, y, color='r')
+    for index, (x_coord, y_coord) in enumerate(zip(x, y),):
+       ax.scatter(x_coord, y_coord, color='r')
+       # ax.text(x_coord, y_coord, str(index), color='g')
 
-    min_x, max_x = min(x), max(x)
-    min_y, max_y = min(y), max(y)
 
-    circle = patches.Circle(((min_x+max_x)/2, (min_y+max_y)/2), ((max_x - min_x)/2), linewidth=2, edgecolor='r', facecolor='none')
+    connections = [
+    (0, 1, 'r-'),
+    (1, 2, 'r-'),
+    (2, 4, 'r-'),
+    (4, 5, 'r-'),
+    (5, 8, 'r-'),
+    (5, 9, 'r-'),
+    (8, 10, 'r-'),
+    (5, 11, 'r-'),
+    (11, 14, 'r-'),
+    (14, 16, 'r-'),
+    (11, 13, 'r-'),
+    (13, 15, 'r-')
+    ]
 
-    ax.add_patch(circle)
+    for start_index, end_index, style in connections:
+       start_point = pose_points[start_index]
+       end_point = pose_points[end_index]
+       ax.plot([start_point['x'], end_point['x']], [start_point['y'], end_point['y']], style, linewidth=3.0)
 
-    outline_points = np.array([[point["x"], point["y"]] for point in pose_points])
-    outline_patch = patches.Polygon(outline_points, closed=True, linewidth=2, edgecolor='b', facecolor='none')
-
-    ax.add_patch(outline_patch)
     plt.show()
 
 
